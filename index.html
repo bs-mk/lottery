@@ -39,13 +39,18 @@
 
     /* トップに固定 */
     .top {
-        top: 10%;
+        font-size: 24px;
     }
 
     /* 下部に固定 */
     .bottom {
         position: absolute;
         bottom: 10%;
+        font-size: 16px;
+        padding: 8px 16px;
+        background-color: #5A9CFF;
+        color: #FFF;
+        border: none;
     }
   </style>
 </head>
@@ -68,6 +73,7 @@
       const codeReader = new ZXing.BrowserQRCodeReader();
       const videoElement = document.getElementById('video');
       const resultImageElement = document.getElementById('resultImage');
+      let lastResult = null; // 最後の判定結果を保持する変数
 
       // 判定値の生成  
       function generateRandomNumber() {
@@ -75,39 +81,43 @@
         return randomNumber;
       }
 
-      codeReader.decodeFromVideoDevice(null, 'video', (result, error) => {
-        if (result) {
-          const resultText = result.getText();
-          document.getElementById('qrScannerContainer').style.display = 'none';
-          if (resultText) {
-            const randomNum = generateRandomNumber();
-            console.log(randomNum);
-            let result;
-            if (randomNum > 0 && randomNum <= 20) {
-              result = "lose";
-              console.log(result);
-            }
-            else if (randomNum > 20 && randomNum <= 30) {
-              result = "jackpot";
-              console.log(result);
-            }
-            else {
-              result = "win";
-              console.log(result);
-            }
-            showResult(result); // 当たり判定の結果を表示
-          }
-        }
-        if (error && !(error instanceof ZXing.NotFoundException)) {
-          console.error(error);
-          showResult('lose');
-        }
-      });
-
-      function showResult(resultType) {
-        var resultElement = document.getElementById('result');
-        var message;
-        var className;
+      function scanQRCode() {
+        codeReader.decodeFromVideoDevice(null, 'video', (result, error) => {
+          if (result) {
+            const resultText = result.getText();
+            document.getElementById('qrScannerContainer').style.display = 'none';
+            if (resultText && lastResult === null) { // 最後の判定結果がない場合のみ実行
+              const randomNum = generateRandomNumber();
+              console.log(randomNum);
+              let result;
+              if (randomNum > 0 && randomNum <= 20) {
+                result = "lose";
+                console.log(result);
+              }
+              else if (randomNum > 
+20 && randomNum <= 30) {
+result = "jackpot";
+console.log(result);
+}
+else {
+result = "win";
+console.log(result);
+}
+lastResult = result; // 最後の判定結果を保持
+showResult(result); // 当たり判定の結果を表示
+}
+}
+if (error && !(error instanceof ZXing.NotFoundException)) {
+console.error(error);
+showResult('lose');
+}
+});
+}
+function showResult(resultType) {
+    var resultElement =
+    document.getElementById('result');
+    var message;
+    var className;
     let boothNum;
     if (resultType === 'lose') {
       message = '訪問ブースが足りません';
@@ -141,39 +151,15 @@
     resultElement.appendChild(boothElement);
 
     setTimeout(function () {
-  resultElement.style.display = 'none';
-  document.getElementById('qrScannerContainer').style.display = 'block';
-  resultImageElement.style.display = 'none'; // 画像非表示
-  codeReader.decodeFromVideoDevice(null, 'video', (result, error) => {
-    // QRコードスキャンの再開
-    if (result) {
-      const resultText = result.getText();
-      document.getElementById('qrScannerContainer').style.display = 'none';
-      if (resultText) {
-        const randomNum = generateRandomNumber();
-        console.log(randomNum);
-        let result;
-        if (randomNum > 0 && randomNum <= 20) {
-          result = "lose";
-          console.log(result);
-        } else if (randomNum > 20 && randomNum <= 30) {
-          result = "jackpot";
-          console.log(result);
-        } else {
-          result = "win";
-          console.log(result);
-        }
-        showResult(result); // 当たり判定の結果を表示
-      }
-    }
-    if (error && !(error instanceof ZXing.NotFoundException)) {
-      console.error(error);
-      showResult('lose');
-    }
-  });
-}, 5000);
-
+      resultElement.style.display = 'none';
+      document.getElementById('qrScannerContainer').style.display = 'block';
+      resultImageElement.style.display = 'none'; // 画像非表示
+      lastResult = null; // 最後の判定結果をリセット
+      scanQRCode(); // QRコードスキャンの再開
+    }, 10000);
   }
+
+  scanQRCode(); // 初回のQRコードスキャンを実行
 });
 </script>
 </body>
