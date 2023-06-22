@@ -39,15 +39,15 @@
 
     /* トップに固定 */
     .top {
-        font-size: 24px;
+        font-size: 54px;
     }
 
     /* 下部に固定 */
     .bottom {
         position: absolute;
         bottom: 10%;
-        font-size: 16px;
-        padding: 8px 16px;
+        font-size: 40px;
+        padding: 24px 40px;
         background-color: #5A9CFF;
         color: #FFF;
         border: none;
@@ -82,40 +82,33 @@
       }
 
       function scanQRCode() {
-        codeReader.decodeFromVideoDevice(null, 'video', (result, error) => {
-          if (result) {
-            const resultText = result.getText();
-            document.getElementById('qrScannerContainer').style.display = 'none';
-            if (resultText && lastResult === null) { // 最後の判定結果がない場合のみ実行
-              const randomNum = generateRandomNumber();
-              console.log(randomNum);
-              let result;
-              if (randomNum > 0 && randomNum <= 20) {
-                result = "lose";
-                console.log(result);
-              }
-              else if (randomNum > 
-20 && randomNum <= 30) {
+        codeReader.decodeOnceFromVideoDevice(null, 'video').then(result => {
+          const resultText = result.getText();
+          document.getElementById('qrScannerContainer').style.display = 'none';
+          if (resultText && lastResult === null) { // 最後の判定結果がない場合のみ実行
+            const randomNum = generateRandomNumber();
+            console.log(randomNum);
+            let result;
+            if (randomNum > 0 && randomNum <= 20) {
+              result = "lose";
+              console.log(result);
+            } else if (randomNum > 20 && randomNum <= 30) {
 result = "jackpot";
 console.log(result);
-}
-else {
+} else {
 result = "win";
 console.log(result);
 }
 lastResult = result; // 最後の判定結果を保持
 showResult(result); // 当たり判定の結果を表示
 }
-}
-if (error && !(error instanceof ZXing.NotFoundException)) {
+}).catch(error => {
 console.error(error);
 showResult('lose');
-}
 });
 }
 function showResult(resultType) {
-    var resultElement =
-    document.getElementById('result');
+    var resultElement = document.getElementById('result');
     var message;
     var className;
     let boothNum;
